@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Owner Dashboard - Everest Digital Stationery</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding: 30px;
+    }
+    .card {
+      border-radius: 15px;
+    }
+    .badge-upi { background-color: #0d6efd; }
+    .badge-cash { background-color: #198754; }
+    .badge-card { background-color: #6f42c1; }
+    .badge-net { background-color: #fd7e14; }
+    .badge-others { background-color: #6c757d; }
+  </style>
+</head>
+<body>
+
+  <h1 class="mb-4">📊 Owner Dashboard - Everest Digital Stationery</h1>
+    <a href="index.html" class="btn btn-secondary mb-4">← Back to Invoice</a>
+</button>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card text-bg-primary p-3 shadow">
+        <h4>Total Revenue</h4>
+        <p id="totalRevenue" class="fs-4">₹0</p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-bg-success p-3 shadow">
+        <h4>GST Collected</h4>
+        <p id="gstSummary" class="fs-4">₹0</p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-bg-warning p-3 shadow">
+        <h4>Top Customer</h4>
+        <p id="topCustomer" class="fs-5">-</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5">
+    <h4>🧾 Recent Invoices</h4>
+    <table class="table table-striped mt-3">
+      <thead class="table-dark">
+        <tr>
+          <th>Invoice #</th>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>Amount (₹)</th>
+          <th>Payment Type</th>
+          <th>Action</th> <!-- 🔴 Added column -->
+        </tr>
+      </thead>
+      <tbody id="invoiceTableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function getPaymentBadge(type) {
+      switch ((type || '').toLowerCase()) {
+        case 'upi': return `<span class="badge badge-upi">UPI</span>`;
+        case 'cash': return `<span class="badge badge-cash">Cash</span>`;
+        case 'card': return `<span class="badge badge-card">Card</span>`;
+        case 'netbanking': return `<span class="badge badge-net">Net Banking</span>`;
+        case 'others': return `<span class="badge badge-others">Others</span>`;
+        default: return `<span class="badge bg-secondary">-</span>`;
+      }
+    }
+
+    function calculateDashboard() {
+      const billHistory = JSON.parse(localStorage.getItem("billHistory")) || [];
+
+      let total = 0;
+      let gstTotal = 0;
+      const customerMap = {};
+
+      const tableBody = document.getElementById("invoiceTableBody");
+      tableBody.innerHTML = "";
+
+      billHistory.slice().reverse().forEach(bill => {
+        total += parseFloat(bill.grandTotal || 0);
+        gstTotal += parseFloat(bill.cgstTotal || 0) + parseFloat(bill.sgstTotal || 0);
+
+        if (bill.customerName) {
+          customerMap[bill.customerName] = (customerMap[bill.customerName] || 0) + 1;
+        }
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${bill.invoiceNo}</td>
+          <td>${bill.invoiceDate}</td>
+          <td>${bill.customerName}</td>
+          <td>₹${parseFloat(bill.grandTotal || 0).toFixed(2)}</td>
+          <td>${getPaymentBadge(bill.paymentType)}</td>
+          <td>
+            <button class="btn btn-sm btn-danger" onclick="deleteInvoice('${bill.invoiceNo}')">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      document.getElementById("totalRevenue").innerText = `₹${total.toFixed(2)}`;
+      document.getElementById("gstSummary").innerText = `₹${gstTotal.toFixed(2)}`;
+
+      const topCustomer = Object.entries(customerMap).sort((a, b) => b[1] - a[1])[0];
+      document.getElementById("topCustomer").innerText = topCustomer ? `${topCustomer[0]} (${topCustomer[1]} orders)` : '-';
+    }
+
+    function deleteInvoice(invoiceNo) {
+      if (!confirm(`Are you sure you want to delete invoice #${invoiceNo}?`)) return;
+
+      let billHistory = JSON.parse(localStorage.getItem("billHistory")) || [];
+      billHistory = billHistory.filter(bill => bill.invoiceNo !== invoiceNo);
+      localStorage.setItem("billHistory", JSON.stringify(billHistory));
+
+      calculateDashboard(); // Refresh
+    }
+
+    window.onload = calculateDashboard;
+  </script>
+
+</body>
+</html>

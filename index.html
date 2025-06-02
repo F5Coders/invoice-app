@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <meta charset="UTF-8" />
+  <title>Everest Digital Stationery - GST Invoice</title>
+  <style>
+    /* Basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #fafafa;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    header img {
+      height: 50px;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .box {
+      margin-bottom: 20px;
+    }
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    label {
+      flex: 1 1 180px;
+      display: flex;
+      flex-direction: column;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="datetime-local"],
+    input[type="number"] {
+      padding: 6px 8px;
+      font-size: 1rem;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    table thead tr {
+      background: #0077cc;
+      color: white;
+      text-align: left;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      min-width: 40px;
+    }
+    td[contenteditable] {
+      background: #fffbea;
+      cursor: text;
+    }
+    .amount, .total {
+      background: #f9f9f9;
+      font-weight: 600;
+      text-align: right;
+    }
+    .add-btn {
+      margin-top: 10px;
+      padding: 8px 15px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #28a745;
+      border: none;
+      color: white;
+      border-radius: 3px;
+    }
+    .delete-btn {
+      background: #dc3545;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    .totals p {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin: 6px 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      align-items: center;
+    }
+    .totals input {
+      width: 120px;
+      font-weight: 700;
+      text-align: right;
+      background: #e9ecef;
+      border: 1px solid #ccc;
+    }
+    .btn-section {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .btn-section button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 3px;
+      border: none;
+      background: #007bff;
+      color: white;
+      flex: 1 1 180px;
+      min-width: 140px;
+      transition: background 0.3s;
+    }
+    .btn-section button:hover {
+      background: #0056b3;
+    }
+    .signature-box {
+      margin-top: 30px;
+      text-align: center;
+      font-weight: bold;
+      color: #444;
+    }
+    .signature-box img {
+      max-height: 80px;
+      margin-bottom: 5px;
+    }
+
+    /* Hidden Tata-style Invoice Template for print */
+    #invoicePrint {
+      display: none;
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #invoicePrint h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+    #invoicePrint table.customer {
+      width: 100%;
+      margin-bottom: 20px;
+      border-collapse: collapse;
+      font-size: 1rem;
+    }
+    #invoicePrint table.customer td {
+      vertical-align: top;
+      padding: 4px;
+    }
+    #invoicePrint table.items {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+    #invoicePrint table.items th,
+    #invoicePrint table.items td {
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: left;
+    }
+    #invoicePrint table.items th {
+      background-color: #eee;
+    }
+    #invoicePrint table.totals {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      font-size: 1rem;
+    }
+    #invoicePrint table.totals td {
+      padding: 4px;
+    }
+    #invoicePrint .totals .label {
+      text-align: right;
+      font-weight: bold;
+      padding-right: 10px;
+    }
+
+    /* Print styles: show only the invoice print section */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #invoicePrint, #invoicePrint * {
+        visibility: visible;
+      }
+      #invoicePrint {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: white;
+      }
+    }
+    #invoicePrint {
+  font-family: 'Arial', sans-serif;
+  color: #1a1a1a;
+  background-color: #ffffff;
+}
+
+/* Company Name */
+#invoicePrint h2 {
+  color: #005baa; /* Rich Blue */
+  font-size: 30px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+/* Labels and Strong Text */
+#invoicePrint strong {
+  color: #222222;
+}
+
+/* Terms & Conditions List Items */
+#invoicePrint ul li {
+  color: #333333;
+  margin-bottom: 6px;
+}
+
+/* Tables */
+#invoicePrint table {
+  color: #000000;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#invoicePrint th {
+  background-color: #e6f2ff;
+  color: #003366;
+  padding: 8px;
+  font-weight: bold;
+  border: 1px solid #ccc;
+}
+
+#invoicePrint td {
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+/* Totals Section */
+#invoicePrint .totals td.label {
+  text-align: right;
+  color: #005baa;
+  font-weight: 600;
+}
+
+#invoicePrint .totals td {
+  font-weight: bold;
+  color: #000000;
+}
+
+/* Paragraphs and List */
+#invoicePrint p, #invoicePrint li {
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* QR Code Section */
+#gpay_qr {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Terms Title */
+#invoicePrint .terms-title {
+  font-size: 18px;
+  color: #d32f2f; /* Highlight color */
+  font-weight: bold;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    max-width: 250px;  /* Control width */
+    margin: 10px 0;
+    font-family: Arial, sans-serif;
+  }
+
+  .form-group label {
+    margin-bottom: 6px;
+    font-weight: bold;
+  }
+
+  #paymentType {
+    padding: 8px 10px;
+    font-size: 16px;
+    border: 1.5px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 100%;
+    background-color: white;
+    transition: border-color 0.3s ease;
+  }
+
+  #paymentType:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0,123,255,0.5);
+  }
+
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Everest Digital Stationery Logo" />
+    Everest Digital Stationery - GST Invoice
+  </header>
+  
+  <div class="container">
+    <!-- Invoice Details -->
+    <div class="box flex-row">
+      <label>Invoice No:<input id="invoiceNo" type="text" placeholder="INV12345" /></label>
+      <label>Date:<input id="invoiceDate" type="datetime-local" /></label>
+      <label>Place of Supply:<input id="placeOfSupply" type="text" value="Tamil Nadu" placeholder="State" /></label>
+      <label>GSTIN:<input id="gstinSeller" type="text" placeholder="29ABCDE1234F2Z5" /></label>
+      <label>PAN No:<input id="panNo" type="text" placeholder="ABCDE1234F" /></label>
+      <label>Customer Email:<input id="customerEmail" type="email" placeholder="example@gmail.com" /></label>
+    </div>
+
+    <!-- Customer Details -->
+    <div class="box flex-row">
+      <label>Customer Name:<input id="customerName" type="text" placeholder="Full Name" /></label>
+      <label>Address:<input id="customerAddress" type="text" placeholder="Street, City" /></label>
+      <label>State:<input id="customerState" type="text" value="Tamil Nadu" placeholder="State" /></label>
+      <label>GSTIN (Buyer):<input id="gstinBuyer" type="text" placeholder="29ABCDE1234F2Z5" /></label>
+      <label>Mobile:<input id="customerMobile" type="text" placeholder="9876543210" /></label>
+      <label>Payment Type:
+    <div class="form-group">
+  <select id="paymentType" name="paymentType">
+    <option value="">-- Select --</option>
+    <option value="UPI">UPI</option>
+    <option value="NetBanking">Net Banking</option>
+    <option value="Cash">Cash</option>
+    <option value="Card">Card</option>
+    <option value="Others">Others</option>
+  </select>
+</div>
+    </div>
+    
+    <!-- Items Table -->
+    <div class="box">
+      <table id="itemsTable">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>HSN</th>
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>Amount</th>
+            <th>CGST %</th>
+            <th>SGST %</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable data-placeholder="Enter Product Name"></td>
+            <td contenteditable data-placeholder="Enter HSN"></td>
+            <td contenteditable data-placeholder="Enter Quantity"></td>
+            <td contenteditable data-placeholder="Enter Rate"></td>
+            <td class="amount" contenteditable="false"></td>
+            <td contenteditable data-placeholder="Enter CGST %"></td>
+            <td contenteditable data-placeholder="Enter SGST %"></td>
+            <td class="total" contenteditable="false"></td>
+            <td><button class="delete-btn" onclick="deleteRow(this)" title="Delete Row">X</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="add-btn" onclick="addRow()">+ Add Item</button>
+    </div>
+
+    <!-- Totals Section -->
+    <div class="box totals">
+      <p>Sub Total: <input type="number" id="subTotal" value="0" readonly /></p>
+      <p>CGST Total: <input type="number" id="cgstTotal" value="0" readonly /></p>
+      <p>SGST Total: <input type="number" id="sgstTotal" value="0" readonly /></p>
+      <p>Grand Total: <input type="number" id="grandTotal" value="0" readonly /></p>
+    </div>
+    
+
+
+    <!-- Buttons -->
+    <div class="btn-section">
+      <button onclick="printInvoice()">Print Invoice</button>
+      <button onclick="shareOnWhatsApp()">Share via WhatsApp</button>
+      <button onclick="openGmailCompose()">Send Invoice via Gmail</button>
+      <button onclick="saveInvoiceToLocal()">Save Invoice</button>
+      <button onclick="clearInvoice()">Clear Invoice</button>
+      <button id="viewDashboardBtn" class="btn btn-primary">
+      📊 View Dashboard
+      </button>
+
+
+    </div>
+  </div>
+<div id="historySection" style="display:none; border:1px solid #ccc; padding:20px; margin-top:30px; background:#f9f9f9; border-radius:8px;">
+  <h3 style="margin-bottom: 15px; font-size: 1.5em; color: #333;">Bill History</h3>
+  <div id="historyContent" style="max-height: 300px; overflow-y: auto;">
+    <div style="color:#666;">No history found.</div>
+  </div>
+  <div style="text-align: right; margin-top: 20px;">
+    <button onclick="closeHistory()" style="padding: 8px 16px; background: #ff5252; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+  </div>
+</div>
+  <section id="invoicePrint" aria-hidden="true" style="color: #003366; font-family: 'Arial', sans-serif;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="your-logo.png" alt="Everest Logo" style="height: 60px;" />
+    <h2 style="margin: 5px 0; font-size: 30px;">Everest Digital Stationery</h2>
+    <div style="font-size: 14px; color: #555;">High Quality | Reliable | Affordable</div>
+    <hr style="margin-top: 15px; border-top: 2px solid #003366;" />
+  </div>
+
+  <!-- Customer + Invoice Info -->
+  <table class="customer" style="width: 100%; font-size: 16px; margin-bottom: 20px;">
+    <tbody>
+      <tr>
+        <td>
+          <strong>Bill To:</strong><br />
+          <span id="pr_customerName"></span><br />
+          <span id="pr_customerAddress"></span><br />
+          <strong>State:</strong> <span id="pr_customerState"></span><br />
+          <strong>GSTIN (Buyer):</strong> <span id="pr_gstinBuyer"></span><br />
+          <strong>Mobile:</strong> <span id="pr_customerMobile"></span><br />
+          <strong>Email:</strong> <span id="pr_customerEmail"></span><br />
+          <strong>Payment Type:</strong> <span id="pr_paymentType"></span>
+
+        </td>
+        <td style="text-align: right;">
+          <strong>Invoice #:</strong> <span id="pr_invoiceNo"></span><br />
+          <strong>Date:</strong> <span id="pr_invoiceDate"></span><br />
+          <strong>Place of Supply:</strong> <span id="pr_placeOfSupply"></span><br />
+          <strong>GSTIN (Seller):</strong> <span id="pr_gstinSeller"></span><br />
+          <strong>PAN No:</strong> <span id="pr_panNo"></span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Items -->
+  <table class="items" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+    <thead style="background-color: #f2f2f2;">
+      <tr style="border: 1px solid #ccc;">
+        <th>Item</th>
+        <th>HSN</th>
+        <th>Qty</th>
+        <th>Rate (₹)</th>
+        <th>Amount (₹)</th>
+        <th>CGST %</th>
+        <th>SGST %</th>
+        <th>Total (₹)</th>
+      </tr>
+    </thead>
+    <tbody id="pr_itemsBody" style="text-align: center;">
+      <!-- Rows inserted dynamically -->
+    </tbody>
+  </table>
+
+  <!-- Totals -->
+  <table class="totals" style="width: 100%; font-size: 16px;">
+    <tbody>
+      <tr>
+        <td style="text-align: right; padding: 8px;">Sub Total:</td>
+        <td style="background-color: #e8f0ff;">₹ <span id="pr_subTotal"></span></td>
+      </tr>
+      <tr>
+        <td style="text-align: right; padding: 8px;">CGST Total:</td>
+        <td style="background-color: #e8f0ff;">₹ <span id="pr_cgstTotal"></span></td>
+      </tr>
+      <tr>
+        <td style="text-align: right; padding: 8px;">SGST Total:</td>
+        <td style="background-color: #e8f0ff;">₹ <span id="pr_sgstTotal"></span></td>
+      </tr>
+      <tr style="font-weight: bold;">
+        <td style="text-align: right; padding: 8px;">Grand Total:</td>
+        <td style="background-color: #cce0ff;">₹ <span id="pr_grandTotal"></span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Payment QR -->
+  <div style="text-align: center; margin-top: 30px;">
+    <div id="gpay_qr" style="margin-bottom: 10px;"></div>
+    <p style="font-size: 16px;"><strong>Scan to Pay (GPay, PhonePe, BHIM)</strong></p>
+    <p style="font-size: 14px; margin-top: -10px;">UPI: <strong style="color: #111;">s.n.emthiaz-2@okhdfcbank</strong></p>
+  </div>
+
+  <!-- Terms -->
+  <div style="margin-top: 30px; font-size: 16px; line-height: 1.6;">
+    <p style="font-weight: bold; font-size: 18px;">Terms & Conditions:</p>
+    <ul style="list-style-type: disc; padding-left: 30px;">
+      <li>Goods once sold will not be taken back or exchanged.</li>
+      <li>Please check the goods before leaving the premises.</li>
+      <li>Warranty (if applicable) is as per the manufacturer's policy only.</li>
+      <li>All disputes are subject to Trichy jurisdiction.</li>
+      <li>This is a computer-generated invoice and does not require a physical signature.</li>
+      <li>Ensure to make UPI payment to <strong>s.n.emthiaz-2@okhdfcbank</strong> only.</li>
+    </ul>
+  </div>
+
+  <!-- Signature -->
+  <div class="signature-box" style="margin-top: 50px; text-align: right; padding-right: 50px;">
+    <div style="font-weight: bold; margin-bottom: 10px;">For Everest Digital Stationery</div>
+    <img src="Screenshot 2025-05-28 001517.png" alt="Authorized Signature" style="max-height: 80px;" />
+    <div>Authorized Signatory</div>
+  </div>
+</section>
+
+    <script>
+       document.getElementById('viewDashboardBtn').addEventListener('click', () => {
+    window.location.href = 'dashboard.html';  // Adjust the path if needed
+  });
+  function closeHistory() {
+    document.getElementById("historySection").style.display = "none";
+  }
+
+  function viewHistory() {
+    const historySection = document.getElementById("historySection");
+    const historyContent = document.getElementById("historyContent");
+    const billHistory = JSON.parse(localStorage.getItem("billHistory")) || [];
+
+    if (billHistory.length === 0) {
+      historyContent.innerHTML = '<div style="color:#999;">No history available.</div>';
+    } else {
+      historyContent.innerHTML = billHistory.map(bill => `
+        <div style="padding: 10px; border-bottom: 1px solid #ddd;">
+          <strong>Invoice No:</strong> ${bill.invoiceNo} <br>
+          <strong>Date:</strong> ${bill.invoiceDate} <br>
+          <strong>Customer:</strong> ${bill.customerName} <br>
+          <strong>Total:</strong> ₹${bill.grandTotal}
+        </div>
+      `).join('');
+    }
+
+    historySection.style.display = "block";
+  }
+</script>
+  </section>
+
+  <style>
+  /* Placeholder for contenteditable cells */
+  td[contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: #aaa;
+    pointer-events: none;
+    user-select: none;
+  }
+</style>
+
+<!--
+  Make sure your HTML has:
+  - A table with id="itemsTable" and a tbody inside it
+  - Input fields with ids: invoiceNo, invoiceDate, placeOfSupply, gstinSeller, panNo, customerEmail,
+    customerName, customerAddress, customerState, gstinBuyer, customerMobile,
+    subTotal, cgstTotal, sgstTotal, grandTotal
+  - A div with id="historySection" containing a child with id="historyContent" for history display
+-->
+
+<script>
+  // Add new item row
+  function addRow() {
+    const tbody = document.querySelector('#itemsTable tbody');
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td contenteditable data-placeholder="Enter Product Name"></td>
+      <td contenteditable data-placeholder="Enter HSN"></td>
+      <td contenteditable data-placeholder="Enter Quantity"></td>
+      <td contenteditable data-placeholder="Enter Rate"></td>
+      <td class="amount" contenteditable="false"></td>
+      <td contenteditable data-placeholder="Enter CGST %"></td>
+      <td contenteditable data-placeholder="Enter SGST %"></td>
+      <td class="total" contenteditable="false"></td>
+      <td><button class="delete-btn" onclick="deleteRow(this)" title="Delete Row">X</button></td>
+    `;
+    tbody.appendChild(newRow);
+  }
+
+  // Delete item row
+  function deleteRow(btn) {
+    const row = btn.closest('tr');
+    row.remove();
+    calculateTotals();
+  }
+
+  function isValidNumber(value) {
+    return !isNaN(value) && value >= 0;
+  }
+
+  function calculateTotals() {
+    let subTotal = 0, cgstTotal = 0, sgstTotal = 0, grandTotal = 0;
+    const rows = document.querySelectorAll('#itemsTable tbody tr');
+    rows.forEach(row => {
+      const qty = parseFloat(row.cells[2].innerText) || 0;
+      const rate = parseFloat(row.cells[3].innerText) || 0;
+      const cgstPercent = parseFloat(row.cells[5].innerText) || 0;
+      const sgstPercent = parseFloat(row.cells[6].innerText) || 0;
+
+      if (![qty, rate, cgstPercent, sgstPercent].every(isValidNumber)) {
+        row.querySelector('.amount').innerText = '';
+        row.querySelector('.total').innerText = '';
+        return;
+      }
+
+      const amount = qty * rate;
+      const cgstAmount = (amount * cgstPercent) / 100;
+      const sgstAmount = (amount * sgstPercent) / 100;
+      const total = amount + cgstAmount + sgstAmount;
+
+      row.querySelector('.amount').innerText = amount.toFixed(2);
+      row.querySelector('.total').innerText = total.toFixed(2);
+
+      subTotal += amount;
+      cgstTotal += cgstAmount;
+      sgstTotal += sgstAmount;
+      grandTotal += total;
+    });
+
+    document.getElementById('subTotal').value = subTotal.toFixed(2);
+    document.getElementById('cgstTotal').value = cgstTotal.toFixed(2);
+    document.getElementById('sgstTotal').value = sgstTotal.toFixed(2);
+    document.getElementById('grandTotal').value = grandTotal.toFixed(2);
+  }
+
+  document.querySelector('#itemsTable tbody').addEventListener('input', (e) => {
+    if (e.target.isContentEditable) {
+      calculateTotals();
+    }
+  });
+
+  function clearInvoice() {
+    if (confirm('Clear all invoice data?')) {
+      [
+        'invoiceNo', 'invoiceDate', 'placeOfSupply', 'gstinSeller', 'panNo',
+        'customerEmail', 'customerName', 'customerAddress', 'customerState',
+        'gstinBuyer', 'customerMobile', 'subTotal', 'cgstTotal', 'sgstTotal', 'grandTotal'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      const tbody = document.querySelector('#itemsTable tbody');
+      tbody.innerHTML = '';
+      addRow();
+      calculateTotals();
+    }
+  }
+
+  function saveInvoiceToLocal() {
+  const invoiceData = {
+    invoiceNo: document.getElementById('invoiceNo').value,
+    invoiceDate: document.getElementById('invoiceDate').value,
+    placeOfSupply: document.getElementById('placeOfSupply').value,
+    gstinSeller: document.getElementById('gstinSeller').value,
+    panNo: document.getElementById('panNo').value,
+    customerEmail: document.getElementById('customerEmail').value,
+    customerName: document.getElementById('customerName').value,
+    customerAddress: document.getElementById('customerAddress').value,
+    customerState: document.getElementById('customerState').value,
+    gstinBuyer: document.getElementById('gstinBuyer').value,
+    customerMobile: document.getElementById('customerMobile').value,
+    paymentType: document.getElementById('paymentType').value, // ✅ included here
+
+    items: [],
+    totals: {
+      subTotal: document.getElementById('subTotal').value,
+      cgstTotal: document.getElementById('cgstTotal').value,
+      sgstTotal: document.getElementById('sgstTotal').value,
+      grandTotal: document.getElementById('grandTotal').value,
+    }
+  };
+
+  // Read table items
+  const rows = document.querySelectorAll('#itemsTable tbody tr');
+  rows.forEach(row => {
+    invoiceData.items.push({
+      item: row.cells[0].innerText.trim(),
+      hsn: row.cells[1].innerText.trim(),
+      qty: row.cells[2].innerText.trim(),
+      rate: row.cells[3].innerText.trim(),
+      amount: row.cells[4].innerText.trim(),
+      cgst: row.cells[5].innerText.trim(),
+      sgst: row.cells[6].innerText.trim(),
+      total: row.cells[7].innerText.trim(),
+    });
+  });
+
+  // Save the current invoice for reload
+  localStorage.setItem('savedInvoice', JSON.stringify(invoiceData));
+
+  // Append to bill history
+  let billHistory = JSON.parse(localStorage.getItem("billHistory")) || [];
+  billHistory.push({
+    invoiceNo: invoiceData.invoiceNo,
+    invoiceDate: invoiceData.invoiceDate,
+    customerName: invoiceData.customerName,
+    customerAddress: invoiceData.customerAddress,
+    items: invoiceData.items,
+    cgstTotal: invoiceData.totals.cgstTotal,
+    sgstTotal: invoiceData.totals.sgstTotal,
+    grandTotal: invoiceData.totals.grandTotal,
+    paymentType: invoiceData.paymentType  // ✅ This line is essential
+  });
+
+  localStorage.setItem("billHistory", JSON.stringify(billHistory));
+  alert('Invoice saved locally and added to history!');
+}
+
+  
+
+  // SHARE WHATSAPP: open WhatsApp with invoice summary text
+  function shareOnWhatsApp() {
+    const invoiceNo = document.getElementById('invoiceNo').value || 'N/A';
+    const invoiceDate = document.getElementById('invoiceDate').value || 'N/A';
+    const customerName = document.getElementById('customerName').value || 'Customer';
+    const grandTotal = document.getElementById('grandTotal').value || '0.00';
+
+    const message = encodeURIComponent(
+      `Invoice No: ${invoiceNo}\nDate: ${invoiceDate}\nCustomer: ${customerName}\nGrand Total: ₹${grandTotal}\n\nThank you for your business!`
+    );
+
+    const whatsappUrl = `https://wa.me/?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  }
+
+  // Initial setup - add one row and calculate totals
+  window.onload = () => {
+    if (document.querySelectorAll('#itemsTable tbody tr').length === 0) addRow();
+    calculateTotals();
+  };
+  function shareViaGmail() {
+  const email = document.getElementById('customerEmail').value.trim();
+  if (!email) {
+    alert('Please enter customer email to share invoice.');
+    return;
+  }
+
+  // Compose subject and body
+  const subject = encodeURIComponent(`Invoice #${document.getElementById('invoiceNo').value || ''}`);
+  
+  // Simple example body - you can customize or generate full invoice text here
+  let body = `Dear Customer,%0D%0A%0D%0APlease find your invoice details below:%0D%0A`;
+  body += `Invoice No: ${document.getElementById('invoiceNo').value}%0D%0A`;
+  body += `Date: ${document.getElementById('invoiceDate').value}%0D%0A`;
+  body += `Grand Total: ₹${document.getElementById('grandTotal').value}%0D%0A%0D%0AThank you for your business.%0D%0A`;
+
+  // Build mailto URL
+  const mailtoLink = `mailto:${email}?subject=${subject}&body=${body}`;
+
+  // Open in new tab/window
+  window.open(mailtoLink, '_blank');
+}
+function generateInvoiceEmail() {
+  const customerName = document.getElementById('customerName').value || 'Customer';
+  const customerEmail = document.getElementById('customerEmail').value || '';
+  const companyName = 'Everest Digital Stationary';
+  const companyPhone = '+91 97896 21947';
+  const companyEmail = 'everestdigitals@gmail.com';
+
+  // Get first item details from the table
+  const firstRow = document.querySelector('#itemsTable tbody tr');
+  if (!firstRow) {
+    alert('No items found in the invoice!');
+    return '';
+  }
+
+  const itemName = firstRow.cells[0].innerText.trim() || 'N/A';
+  const qty = firstRow.cells[2].innerText.trim() || 'N/A';
+  const rate = firstRow.cells[3].innerText.trim() || 'N/A';
+  const total = firstRow.cells[7].innerText.trim() || 'N/A';
+
+  const message = `
+Dear ${customerName},
+
+Thank you for your purchase from ${companyName}.
+Here is your invoice detail for the item:
+
+Item Name: ${itemName}
+Quantity: ${qty}
+Rate: ₹${rate}
+Total Amount: ₹${total}
+
+If you have any questions or need further assistance, feel free to contact us at:
+📞 ${companyPhone}
+📧 ${companyEmail}
+
+We appreciate your business and look forward to serving you again!
+
+Best regards,
+${companyName}
+${companyPhone}
+${companyEmail}
+  `.trim();
+
+  return message;
+}
+function openGmailCompose() {
+  const customerEmail = document.getElementById('customerEmail').value || '';
+  if (!customerEmail) {
+    alert('Please enter the customer email to share the invoice.');
+    return;
+  }
+
+  const subject = encodeURIComponent('Your Invoice from Everest Digital Stationary');
+  const body = encodeURIComponent(generateInvoiceEmail());
+
+  const mailtoUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(customerEmail)}&su=${subject}&body=${body}`;
+
+  window.open(mailtoUrl, '_blank');
+}
+// Populate hidden print template with live invoice data
+function populatePrintInvoice() {
+  [
+    'invoiceNo', 'invoiceDate', 'placeOfSupply', 'gstinSeller', 'panNo',
+    'customerEmail', 'customerName', 'customerAddress', 'customerState',
+    'gstinBuyer', 'customerMobile','paymentType' 
+  ].forEach(id => {
+    const src = document.getElementById(id);
+    const dst = document.getElementById('pr_' + id);
+    if (src && dst) {
+      const val = (id === 'invoiceDate') ? src.value.replace('T', ' ') : (src.value || src.innerText || '');
+      dst.innerText = val;
+    }
+  });
+
+  const body = document.getElementById('pr_itemsBody');
+  if (!body) return;
+  body.innerHTML = '';
+
+  document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
+    const cells = Array.from(row.cells).map(cell => cell.innerText.trim());
+    if (!cells[0]) return; // skip empty rows
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = cells.map(cell => `<td>${cell}</td>`).join('');
+    body.appendChild(tr);
+  });
+
+  ['subTotal', 'cgstTotal', 'sgstTotal', 'grandTotal'].forEach(id => {
+    const src = document.getElementById(id);
+    const dst = document.getElementById('pr_' + id);
+    if (src && dst) {
+      let val = src.value || src.innerText || '0.00';
+      if (!isNaN(val)) val = parseFloat(val).toFixed(2);
+      dst.innerText = val;
+    }
+  });
+  const upiID = "s.n.emthiaz-2@okhdfcbank";
+const payeeName = "Everest Digital Stationery";
+const amount = document.getElementById("grandTotal").value || "0.00";
+
+const upiURL = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
+
+document.getElementById("gpay_qr").innerHTML = ""; // clear old QR
+new QRCode(document.getElementById("gpay_qr"), {
+  text: upiURL,
+  width: 150,
+  height: 150
+});
+
+  
+}
+
+
+// Called on clicking "Print Invoice" button
+function printInvoice() {
+  populatePrintInvoice();  // Fill print template with data
+  window.print();          // Open print dialog
+}
+</script>
+</body>
+</html>
